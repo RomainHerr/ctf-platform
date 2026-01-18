@@ -24,7 +24,7 @@ import { Challenge, ChallengePublic } from "@/types";
 
 export async function GET(request: NextRequest) {
   // Apply rate limiting
-  const { result: rateLimit, identifier } = applyRateLimit(request, "general");
+  const { result: rateLimit } = applyRateLimit(request, "general");
   if (!rateLimit.allowed) {
     return rateLimitedResponse(rateLimit);
   }
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     return authResult;
   }
 
-  const { user, userData } = authResult as AuthenticatedContext;
+  const { userData } = authResult as AuthenticatedContext;
 
   try {
     // Fetch active challenges
@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
         attachments: data.attachments,
         solveCount: data.solveCount,
         isSolved: solvedChallenges.includes(doc.id),
+        isComingSoon: data.isComingSoon || false,
       };
     });
 

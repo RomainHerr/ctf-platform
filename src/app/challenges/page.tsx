@@ -12,7 +12,6 @@ import { useRouter } from "next/navigation";
 import { Header, Footer } from "@/components/layout";
 import {
   Card,
-  Button,
   Badge,
   DifficultyBadge,
   CategoryBadge,
@@ -25,7 +24,6 @@ import {
   ChallengePublic,
   ChallengeCategory,
   ChallengeDifficulty,
-  DIFFICULTY_POINTS,
 } from "@/types";
 
 const categories: (ChallengeCategory | "all")[] = [
@@ -45,6 +43,7 @@ const difficulties: (ChallengeDifficulty | "all")[] = [
   "medium",
   "hard",
   "expert",
+  "insane",
 ];
 
 export default function ChallengesPage(): React.ReactElement {
@@ -63,6 +62,7 @@ export default function ChallengesPage(): React.ReactElement {
     if (isAuthorized) {
       fetchChallenges();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthorized]);
 
   const fetchChallenges = async () => {
@@ -105,12 +105,14 @@ export default function ChallengesPage(): React.ReactElement {
 
   // Stats
   const stats = useMemo(() => {
-    const total = challenges.length;
-    const solved = challenges.filter((c) => c.isSolved).length;
-    const points = challenges
+    const activeChallenges = challenges.filter((c) => !c.isComingSoon);
+    const total = activeChallenges.length;
+    const solved = activeChallenges.filter((c) => c.isSolved).length;
+    const points = activeChallenges
       .filter((c) => c.isSolved)
       .reduce((acc, c) => acc + c.points, 0);
-    return { total, solved, points };
+    const comingSoon = challenges.filter((c) => c.isComingSoon).length;
+    return { total, solved, points, comingSoon };
   }, [challenges]);
 
   if (authLoading) {
@@ -139,18 +141,22 @@ export default function ChallengesPage(): React.ReactElement {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card className="text-center py-4">
             <div className="text-2xl font-bold text-primary-400">{stats.solved}</div>
             <div className="text-cyber-muted text-sm">Solved</div>
           </Card>
           <Card className="text-center py-4">
             <div className="text-2xl font-bold text-cyber-text">{stats.total}</div>
-            <div className="text-cyber-muted text-sm">Total</div>
+            <div className="text-cyber-muted text-sm">Active</div>
           </Card>
           <Card className="text-center py-4">
             <div className="text-2xl font-bold text-yellow-400">{stats.points}</div>
             <div className="text-cyber-muted text-sm">Points</div>
+          </Card>
+          <Card className="text-center py-4 border-dashed border-gray-600">
+            <div className="text-2xl font-bold text-gray-500">{stats.comingSoon}</div>
+            <div className="text-gray-600 text-sm">Coming Soon</div>
           </Card>
         </div>
 
@@ -243,32 +249,46 @@ export default function ChallengesPage(): React.ReactElement {
                 {filteredChallenges.map((challenge) => (
                   <Card
                     key={challenge.id}
-                    hover
-                    onClick={() => router.push(`/challenges/${challenge.id}`)}
-                    className={challenge.isSolved ? "border-primary-500/30" : ""}
+                    hover={!challenge.isComingSoon}
+                    onClick={() => !challenge.isComingSoon && router.push(`/challenges/${challenge.id}`)}
+                    className={`
+                      ${challenge.isSolved ? "border-primary-500/30" : ""}
+                      ${challenge.isComingSoon ? "opacity-50 cursor-not-allowed border-dashed border-gray-600" : "cursor-pointer"}
+                    `}
                   >
                     <div className="flex items-start justify-between mb-3">
                       <CategoryBadge category={challenge.category} />
-                      {challenge.isSolved && <Badge variant="solved">Solved</Badge>}
+                      <div className="flex gap-2">
+                        {challenge.isComingSoon && (
+                          <Badge variant="coming">Coming Soon</Badge>
+                        )}
+                        {challenge.isSolved && !challenge.isComingSoon && (
+                          <Badge variant="solved">Solved</Badge>
+                        )}
+                      </div>
                     </div>
 
-                    <h3 className="text-lg font-semibold text-cyber-text mb-2">
+                    <h3 className={`text-lg font-semibold mb-2 ${challenge.isComingSoon ? "text-gray-500" : "text-cyber-text"}`}>
                       {challenge.title}
                     </h3>
 
-                    <p className="text-cyber-muted text-sm mb-4 line-clamp-2">
-                      {challenge.description}
+                    <p className={`text-sm mb-4 line-clamp-2 ${challenge.isComingSoon ? "text-gray-600" : "text-cyber-muted"}`}>
+                      {challenge.isComingSoon 
+                        ? "This challenge is not yet available. Stay tuned for updates!"
+                        : challenge.description}
                     </p>
 
                     <div className="flex items-center justify-between pt-4 border-t border-cyber-border">
                       <DifficultyBadge difficulty={challenge.difficulty} />
                       <div className="flex items-center gap-4 text-sm">
-                        <span className="text-yellow-400 font-medium">
+                        <span className={challenge.isComingSoon ? "text-gray-500 font-medium" : "text-yellow-400 font-medium"}>
                           {challenge.points} pts
                         </span>
-                        <span className="text-cyber-muted">
-                          {challenge.solveCount} solves
-                        </span>
+                        {!challenge.isComingSoon && (
+                          <span className="text-cyber-muted">
+                            {challenge.solveCount} solves
+                          </span>
+                        )}
                       </div>
                     </div>
                   </Card>

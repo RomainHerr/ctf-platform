@@ -141,13 +141,6 @@ const features = [
   },
 ];
 
-const stats = [
-  { label: "Challenges", value: "50+" },
-  { label: "Categories", value: "7" },
-  { label: "Active Players", value: "500+" },
-  { label: "Flags Captured", value: "10K+" },
-];
-
 export default function HomePage(): React.ReactElement {
   const { user, loading } = useAuth();
 
@@ -208,24 +201,6 @@ export default function HomePage(): React.ReactElement {
                   </>
                 )}
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="py-12 bg-cyber-darker/50 border-y border-cyber-border">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-primary-400 mb-2">
-                    {stat.value}
-                  </div>
-                  <div className="text-cyber-muted text-sm uppercase tracking-wider">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </section>

@@ -55,14 +55,37 @@ export function Footer(): React.ReactElement {
             </ul>
           </div>
 
-          {/* Security */}
+          {/* Project Docs */}
           <div>
-            <h3 className="text-cyber-text font-semibold mb-4">Security</h3>
-            <p className="text-cyber-muted text-sm leading-relaxed">
-              This platform implements industry-standard security practices
-              including secure authentication, rate limiting, and data encryption.
-              All flag validations occur server-side.
-            </p>
+            <h3 className="text-cyber-text font-semibold mb-4">Project Docs</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a
+                  href="/Reports/Secure CTF Platform - Presentation.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyber-muted hover:text-primary-400 transition-colors inline-flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Presentation
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/Reports/Secure CTF Platform – Project Report.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyber-muted hover:text-primary-400 transition-colors inline-flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Report
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
 
@@ -70,7 +93,7 @@ export function Footer(): React.ReactElement {
           <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-cyber-muted">
             <p>Copyright {currentYear} CTF Platform. All rights reserved.</p>
             <p className="mt-2 sm:mt-0">
-              Academic Cybersecurity Project
+              ISEP - Cybersecurity Project 2026
             </p>
           </div>
         </div>

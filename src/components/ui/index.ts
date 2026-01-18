@@ -10,3 +10,4 @@ export { Alert } from "./Alert";
 export { Card, CardHeader, CardTitle, CardContent, CardFooter } from "./Card";
 export { Badge, DifficultyBadge, CategoryBadge } from "./Badge";
 export { LoadingSpinner, PageLoader } from "./LoadingSpinner";
+export { Modal } from "./Modal";

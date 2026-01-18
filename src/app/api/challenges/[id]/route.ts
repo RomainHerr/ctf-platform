@@ -74,6 +74,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       attachments: data.attachments,
       solveCount: data.solveCount,
       isSolved: solvedChallenges.includes(challengeDoc.id),
+      isComingSoon: data.isComingSoon || false,
     };
 
     return successResponse(challenge);

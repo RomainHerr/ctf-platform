@@ -16,7 +16,7 @@ import { UserPublic } from "@/types";
 
 export default function ProfilePage(): React.ReactElement {
   const { isAuthorized, isLoading: authLoading } = useProtectedRoute();
-  const { user, userData } = useAuth();
+  const { user } = useAuth();
   const { execute: fetchProfile, loading: fetchLoading, error: fetchError } = useApi<UserPublic>();
   const { execute: updateProfile, loading: updateLoading, error: updateError } = useApi<{ updated: boolean }>();
 
@@ -30,6 +30,7 @@ export default function ProfilePage(): React.ReactElement {
     if (isAuthorized) {
       loadProfile();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthorized]);
 
   const loadProfile = async () => {

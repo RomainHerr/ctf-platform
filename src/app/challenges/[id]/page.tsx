@@ -9,7 +9,6 @@
 
 import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Header, Footer } from "@/components/layout";
 import {
   Card,
@@ -20,8 +19,10 @@ import {
   CategoryBadge,
   Badge,
   LoadingSpinner,
+  Modal,
 } from "@/components/ui";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
+import { useAuth } from "@/contexts/AuthContext";
 import { useApi, useSubmitFlag } from "@/hooks/useApi";
 import { ChallengePublic } from "@/types";
 
@@ -31,10 +32,10 @@ interface PageProps {
 
 export default function ChallengeDetailPage({ params }: PageProps): React.ReactElement {
   const { id } = use(params);
-  const router = useRouter();
   const { isAuthorized, isLoading: authLoading } = useProtectedRoute();
+  const { user } = useAuth();
   const { execute, loading: fetchLoading, error: fetchError } = useApi<ChallengePublic>();
-  const { submitFlag, loading: submitLoading, error: submitError } = useSubmitFlag();
+  const { submitFlag, loading: submitLoading } = useSubmitFlag();
 
   const [challenge, setChallenge] = useState<ChallengePublic | null>(null);
   const [flag, setFlag] = useState("");
@@ -44,12 +45,21 @@ export default function ChallengeDetailPage({ params }: PageProps): React.ReactE
     points?: number;
   } | null>(null);
   const [showHints, setShowHints] = useState<boolean[]>([]);
+  
+  // Cheat modal state
+  const [showCheatModal, setShowCheatModal] = useState(false);
+  const [cheatLoading, setCheatLoading] = useState(false);
+  const [cheatSolution, setCheatSolution] = useState<{
+    flag: string;
+    explanation: string;
+  } | null>(null);
 
   // Fetch challenge
   useEffect(() => {
     if (isAuthorized && id) {
       fetchChallenge();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthorized, id]);
 
   const fetchChallenge = async () => {
@@ -97,6 +107,46 @@ export default function ChallengeDetailPage({ params }: PageProps): React.ReactE
       newState[index] = !newState[index];
       return newState;
     });
+  };
+
+  const handleCheatConfirm = async () => {
+    if (!challenge || !user) return;
+
+    setCheatLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("/api/challenges/cheat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ challengeId: challenge.id }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.data) {
+        setCheatSolution({
+          flag: data.data.flag,
+          explanation: data.data.explanation,
+        });
+      } else {
+        setResult({
+          type: "error",
+          message: data.error || "Failed to get solution",
+        });
+        setShowCheatModal(false);
+      }
+    } catch {
+      setResult({
+        type: "error",
+        message: "Failed to get solution",
+      });
+      setShowCheatModal(false);
+    } finally {
+      setCheatLoading(false);
+    }
   };
 
   if (authLoading) {
@@ -323,12 +373,115 @@ export default function ChallengeDetailPage({ params }: PageProps): React.ReactE
                     <p className="mt-4 text-xs text-cyber-muted">
                       Flags are case-insensitive. Rate limited to 5 attempts per minute.
                     </p>
+
+                    {/* Cheat Button */}
+                    <div className="mt-6 pt-6 border-t border-cyber-border">
+                      <button
+                        onClick={() => setShowCheatModal(true)}
+                        className="w-full py-2 px-4 text-sm text-red-400/70 hover:text-red-400 hover:bg-red-500/10 border border-red-500/20 hover:border-red-500/40 rounded-lg transition-all duration-200"
+                      >
+                        I want to cheat
+                      </button>
+                    </div>
                   </>
                 )}
               </Card>
             </div>
           </div>
         )}
+
+        {/* Cheat Warning Modal */}
+        <Modal
+          isOpen={showCheatModal}
+          onClose={() => {
+            setShowCheatModal(false);
+            setCheatSolution(null);
+          }}
+          title="Warning: Cheating"
+          variant="warning"
+        >
+          {!cheatSolution ? (
+            <>
+              <div className="space-y-4">
+                <p className="text-gray-300">
+                  You are about to reveal the solution for this challenge.
+                </p>
+                
+                <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                  <p className="text-yellow-400 text-sm font-medium mb-2">
+                    This action will be permanently recorded on your profile.
+                  </p>
+                  <p className="text-yellow-400/70 text-sm">
+                    Other players will be able to see that you cheated on this challenge.
+                  </p>
+                </div>
+
+                <p className="text-gray-400 text-sm">
+                  Are you sure you want to continue?
+                </p>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowCheatModal(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={handleCheatConfirm}
+                  loading={cheatLoading}
+                  className="flex-1"
+                >
+                  Yes, show me the solution
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="space-y-4">
+                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                  <p className="text-red-400 text-xs font-medium mb-2 uppercase tracking-wide">
+                    Cheated - Recorded on your profile
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    Flag
+                  </label>
+                  <div className="p-3 bg-cyber-dark border border-cyber-border rounded-lg font-mono text-cyber-green break-all">
+                    {cheatSolution.flag}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    Explanation
+                  </label>
+                  <p className="text-gray-300 text-sm">
+                    {cheatSolution.explanation}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setShowCheatModal(false);
+                    setCheatSolution(null);
+                  }}
+                  fullWidth
+                >
+                  Close
+                </Button>
+              </div>
+            </>
+          )}
+        </Modal>
       </main>
 
       <Footer />

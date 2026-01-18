@@ -8,6 +8,7 @@
  */
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { Header, Footer } from "@/components/layout";
 import { Card, LoadingSpinner, Alert } from "@/components/ui";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
@@ -27,6 +28,7 @@ export default function LeaderboardPage(): React.ReactElement {
     if (isAuthorized) {
       fetchLeaderboard();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthorized]);
 
   const fetchLeaderboard = async () => {
@@ -136,9 +138,12 @@ export default function LeaderboardPage(): React.ReactElement {
                       )}
                     </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-cyber-text mb-1">
+                  <Link
+                    href={`/profile/${entry.uid}`}
+                    className="text-lg font-semibold text-cyber-text mb-1 hover:text-cyber-green transition-colors"
+                  >
                     {entry.displayName || "Anonymous"}
-                  </h3>
+                  </Link>
                   <div className="text-2xl font-bold text-primary-400 mb-2">
                     {entry.score} pts
                   </div>
@@ -202,13 +207,16 @@ export default function LeaderboardPage(): React.ReactElement {
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-cyber-border flex items-center justify-center">
-                              <span className="text-sm font-medium text-cyber-text">
+                          <Link
+                            href={`/profile/${entry.uid}`}
+                            className="flex items-center gap-3 group"
+                          >
+                            <div className="w-8 h-8 rounded-full bg-cyber-border flex items-center justify-center group-hover:bg-cyber-green/20 transition-colors">
+                              <span className="text-sm font-medium text-cyber-text group-hover:text-cyber-green transition-colors">
                                 {entry.displayName?.[0]?.toUpperCase() || "A"}
                               </span>
                             </div>
-                            <span className="text-cyber-text">
+                            <span className="text-cyber-text group-hover:text-cyber-green transition-colors">
                               {entry.displayName || "Anonymous"}
                               {entry.uid === userData?.uid && (
                                 <span className="ml-2 text-xs text-primary-400">
@@ -216,7 +224,7 @@ export default function LeaderboardPage(): React.ReactElement {
                                 </span>
                               )}
                             </span>
-                          </div>
+                          </Link>
                         </td>
                         <td className="px-4 py-3 text-right">
                           <span className="font-mono font-semibold text-primary-400">

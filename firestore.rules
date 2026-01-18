@@ -52,28 +52,13 @@ service cloud.firestore {
     // =============================================
     
     match /users/{userId} {
-      // Users can read their own profile
       // Anyone authenticated can read public user data (for leaderboard)
       allow read: if isAuthenticated();
       
-      // Users cannot create their own document from client
-      // Creation happens via API routes with Admin SDK
+      // All writes go through API Routes with Admin SDK
+      // This ensures consistent validation and prevents client-side manipulation
       allow create: if false;
-      
-      // Users can update only their display name
-      // Score and solved challenges are updated via API routes only
-      allow update: if isOwner(userId) && 
-        isEmailVerified() &&
-        fieldUnchanged('uid') &&
-        fieldUnchanged('email') &&
-        fieldUnchanged('score') &&
-        fieldUnchanged('solvedChallenges') &&
-        fieldUnchanged('rank') &&
-        fieldUnchanged('isAdmin') &&
-        fieldUnchanged('isBanned') &&
-        fieldUnchanged('createdAt');
-      
-      // No client-side deletion
+      allow update: if false;
       allow delete: if false;
     }
     

@@ -48,7 +48,7 @@ export interface CreateUserData {
 // Challenge Types
 // ============================================
 
-export type ChallengeDifficulty = "easy" | "medium" | "hard" | "expert";
+export type ChallengeDifficulty = "easy" | "medium" | "hard" | "expert" | "insane";
 
 export type ChallengeCategory =
   | "web"
@@ -73,6 +73,7 @@ export interface Challenge {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   isActive: boolean;
+  isComingSoon: boolean; // Challenge not yet available
   author: string;
 }
 
@@ -94,6 +95,7 @@ export interface ChallengePublic {
   attachments: ChallengeAttachment[];
   solveCount: number;
   isSolved: boolean; // Contextual to current user
+  isComingSoon: boolean; // Challenge not yet available
 }
 
 // ============================================
@@ -212,6 +214,7 @@ export const DIFFICULTY_POINTS: Record<ChallengeDifficulty, number> = {
   medium: 250,
   hard: 500,
   expert: 1000,
+  insane: 2000,
 } as const;
 
 // ============================================

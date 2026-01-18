@@ -6,8 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "seed": "npx tsx scripts/seed-challenges.ts"
+    "lint": "eslint .",
+    "seed": "npx tsx scripts/seed-challenges.ts",
+    "clear-challenges": "npx tsx scripts/clear-challenges.ts",
+    "generate-files": "npx tsx scripts/generate-challenge-files.ts",
+    "reset-challenges": "npm run clear-challenges && npm run seed",
+    "reset-user": "npx tsx scripts/reset-user-progress.ts",
+    "reset-all-users": "npx tsx scripts/reset-user-progress.ts"
   },
   "dependencies": {
     "firebase": "^11.0.0",
@@ -19,8 +24,10 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.3",
     "@tailwindcss/forms": "^0.5.11",
     "@types/node": "^20.11.0",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.17",
@@ -28,6 +35,8 @@
     "eslint": "^8.56.0",
     "eslint-config-next": "15.5.9",
     "postcss": "^8.4.33",
+    "qrcode": "^1.5.4",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.21.0",
     "typescript": "^5.3.0"
