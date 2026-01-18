@@ -1,0 +1,120 @@
+rules_version = '2';
+
+/**
+ * Firestore Security Rules for CTF Platform
+ * 
+ * SECURITY ARCHITECTURE:
+ * - All critical operations (flag validation, score updates) go through API Routes
+ * - These rules provide defense-in-depth
+ * - Client-side access is restricted to read operations only
+ * - Write operations are handled server-side via Admin SDK (bypasses these rules)
+ * 
+ * IMPORTANT: The Admin SDK bypasses all security rules.
+ * These rules only apply to client-side SDK operations.
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // =============================================
+    // HELPER FUNCTIONS
+    // =============================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user's email is verified
+    function isEmailVerified() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    
+    // Check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // Validate that a field hasn't changed
+    function fieldUnchanged(field) {
+      return resource.data[field] == request.resource.data[field];
+    }
+    
+    // =============================================
+    // USERS COLLECTION
+    // =============================================
+    
+    match /users/{userId} {
+      // Users can read their own profile
+      // Anyone authenticated can read public user data (for leaderboard)
+      allow read: if isAuthenticated();
+      
+      // Users cannot create their own document from client
+      // Creation happens via API routes with Admin SDK
+      allow create: if false;
+      
+      // Users can update only their display name
+      // Score and solved challenges are updated via API routes only
+      allow update: if isOwner(userId) && 
+        isEmailVerified() &&
+        fieldUnchanged('uid') &&
+        fieldUnchanged('email') &&
+        fieldUnchanged('score') &&
+        fieldUnchanged('solvedChallenges') &&
+        fieldUnchanged('rank') &&
+        fieldUnchanged('isAdmin') &&
+        fieldUnchanged('isBanned') &&
+        fieldUnchanged('createdAt');
+      
+      // No client-side deletion
+      allow delete: if false;
+    }
+    
+    // =============================================
+    // CHALLENGES COLLECTION
+    // =============================================
+    
+    match /challenges/{challengeId} {
+      // Authenticated users with verified email can read active challenges
+      // CRITICAL: flagHash must NEVER be exposed to clients
+      // The client SDK should never query for flagHash
+      allow read: if isAuthenticated() && 
+        isEmailVerified() &&
+        resource.data.isActive == true;
+      
+      // Only admins can manage challenges (via Admin SDK in practice)
+      allow create, update, delete: if false;
+    }
+    
+    // =============================================
+    // SUBMISSIONS COLLECTION
+    // =============================================
+    
+    match /submissions/{submissionId} {
+      // Users can read their own submissions
+      allow read: if isAuthenticated() && 
+        isEmailVerified() &&
+        resource.data.userId == request.auth.uid;
+      
+      // Submissions are created via API routes only
+      // This prevents bypass of rate limiting and flag validation
+      allow create, update, delete: if false;
+    }
+    
+    // =============================================
+    // DEFAULT DENY
+    // =============================================
+    
+    // Deny all other collections by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
