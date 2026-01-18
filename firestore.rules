@@ -55,10 +55,26 @@ service cloud.firestore {
       // Anyone authenticated can read public user data (for leaderboard)
       allow read: if isAuthenticated();
       
-      // All writes go through API Routes with Admin SDK
-      // This ensures consistent validation and prevents client-side manipulation
-      allow create: if false;
-      allow update: if false;
+      // Users can create their own document (for OAuth sign-up)
+      allow create: if isOwner(userId) &&
+        request.resource.data.uid == userId &&
+        request.resource.data.score == 0 &&
+        request.resource.data.solvedChallenges == [] &&
+        request.resource.data.isAdmin == false &&
+        request.resource.data.isBanned == false;
+      
+      // Users can update only non-sensitive fields (lastLoginAt, emailVerified)
+      // Score and solvedChallenges are updated via API routes only
+      allow update: if isOwner(userId) &&
+        fieldUnchanged('uid') &&
+        fieldUnchanged('email') &&
+        fieldUnchanged('score') &&
+        fieldUnchanged('solvedChallenges') &&
+        fieldUnchanged('isAdmin') &&
+        fieldUnchanged('isBanned') &&
+        fieldUnchanged('createdAt');
+      
+      // No client-side deletion
       allow delete: if false;
     }
     
