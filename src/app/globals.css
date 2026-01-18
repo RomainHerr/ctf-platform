@@ -308,7 +308,7 @@ a:hover {
 ::selection {
   background-color: var(--accent-primary);
   color: var(--bg-primary);
-}
+  }
 
 /* ============================================
    Focus Visible
@@ -324,7 +324,7 @@ a:hover {
    ============================================ */
 
 @media print {
-  body {
+body {
     background: white;
     color: black;
   }

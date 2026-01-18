@@ -16,6 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: {
     default: "CTF Platform - Cybersecurity Training",
     template: "%s | CTF Platform",
@@ -41,6 +42,10 @@ export const metadata: Metadata = {
     description:
       "A secure Capture The Flag platform for cybersecurity training and competitions.",
     siteName: "CTF Platform",
+  },
+  icons: {
+    icon: [{ url: "/icon", type: "image/png" }],
+    apple: [{ url: "/apple-icon", type: "image/png" }],
   },
 };
 
